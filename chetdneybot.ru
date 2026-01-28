@@ -12,6 +12,7 @@ MESSAGE_ID = 368               # message_id сообщения
 
 bot = Bot(TOKEN)
 dp = Dispatcher()
+counter = 0
 
 keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="🔁 Сброс", callback_data="reset")],
@@ -25,26 +26,20 @@ async def start(msg: types.Message):
 
 @dp.callback_query()
 async def handle_buttons(call: types.CallbackQuery):
+    global counter
+
     if call.from_user.id != ADMIN_ID:
         await call.answer("Нет доступа ❌", show_alert=True)
         return
 
-    # Получаем текущее сообщение из канала
-    msg = await bot.get_message(CHANNEL_ID, MESSAGE_ID)
-    text = msg.text
-
-    # Ищем число в тексте
-    number = int(re.search(r"\d+", text).group())
-
     if call.data == "reset":
-        new_number = 0
+        counter = 0
     elif call.data == "plus":
-        new_number = number + 1
+        counter += 1
     else:
         return
 
-    # Меняем только число
-    new_text = re.sub(r"\d+", str(new_number), text)
+    new_text = f"Дней без гостей из вахты: {counter}"
 
     await bot.edit_message_text(
         chat_id=CHANNEL_ID,
